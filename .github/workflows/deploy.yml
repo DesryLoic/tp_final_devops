@@ -19,7 +19,7 @@ jobs:
         working-directory: ./Partie1
         run: |
           terraform init
-          terraform apply -auto-approve
+          terraform apply -auto-approve -parallelism=1
 
           chmod +x get_ip.sh
           ./get_ip.sh
