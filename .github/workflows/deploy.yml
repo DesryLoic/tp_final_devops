@@ -16,17 +16,21 @@ jobs:
           clean: false
 
       - name: Déploiement VM Principale (Partie 1)
-        run: |
-          cd /home/loicdesry/TPFinal_Desry/Partie1
-          terraform apply -auto-approve
-          chmod +x get_ip.sh
-          ./get_ip.sh
-          echo "VM_IP=$(terraform output -raw vm_ip)" >> $GITHUB_ENV
+        working-directory: ./Partie1
+        run: terraform apply -auto-approve
 
       - name: Déploiement VM Monitoring (Partie 5)
+        working-directory: ./Partie5
+        run: terraform apply -auto-approve
+
+      - name: Récupération des IPs et création inventaire
+        working-directory: ./Partie1
         run: |
-          cd /home/loicdesry/TPFinal_Desry/Partie5
-          terraform apply -auto-approve
+          chmod +x get_ip.sh
+          ./get_ip.sh
+          # On exporte les IPs pour que GitHub Actions s'en souvienne pour la suite
+          echo "VM_IP=$(terraform output -raw vm_ip)" >> $GITHUB_ENV
+          cd ../Partie5
           echo "MONITOR_IP=$(terraform output -raw monitor_ip)" >> $GITHUB_ENV
 
       - name: Connexion et Push Docker Hub
