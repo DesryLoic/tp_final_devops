@@ -1,0 +1,42 @@
+name: Deploiement Automatique (CI/CD)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploiement:
+    runs-on: self-hosted
+
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+        with:
+          clean: false
+
+      - name: Configuration de l'infrastructure (Terraform)
+        working-directory: ./Partie1
+        run: |
+          terraform init
+          terraform apply -auto-approve
+          ./get_ip.sh
+          echo "VM_IP=$(terraform output -raw vm_ip)" >> $GITHUB_ENV
+
+      - name: Connexion et Push Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/api-lacets:latest ./Partie2/api-lacets
+          docker push ${{ secrets.DOCKER_USERNAME }}/api-lacets:latest
+
+      - name: nstallation de Kubernetes (K3s en direct SSH)
+        run: |
+          sleep 15
+          sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "curl -sfL https://get.k3s.io | sh -"
+          sleep 30
+
+      - name: Déploiement sur Kubernetes
+        working-directory: ./Partie3
+        run: |
+          sshpass -p "vagrant" scp -o StrictHostKeyChecking=no mysql.yaml api.yaml vagrant@${{ env.VM_IP }}:~
+          sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "sudo /usr/local/bin/k3s kubectl apply -f mysql.yaml && sudo /usr/local/bin/k3s kubectl apply -f api.yaml"
