@@ -17,11 +17,15 @@ jobs:
 
       - name: Déploiement VM Principale (Partie 1)
         working-directory: ./Partie1
-        run: terraform apply -auto-approve
+        run: |
+          terraform init
+          terraform apply -auto-approve
 
       - name: Déploiement VM Monitoring (Partie 5)
         working-directory: ./Partie5
-        run: terraform apply -auto-approve
+        run: |
+          terraform init
+          terraform apply -auto-approve
 
       - name: Récupération des IPs et création inventaire
         working-directory: ./Partie1
