@@ -20,6 +20,8 @@ jobs:
         run: |
           terraform init
           terraform apply -auto-approve
+
+          chmod +x get_ip.sh
           ./get_ip.sh
           echo "VM_IP=$(terraform output -raw vm_ip)" >> $GITHUB_ENV
 
@@ -29,7 +31,7 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/api-lacets:latest ./Partie2/api-lacets
           docker push ${{ secrets.DOCKER_USERNAME }}/api-lacets:latest
 
-      - name: nstallation de Kubernetes (K3s en direct SSH)
+      - name: Installation de Kubernetes (K3s en direct SSH)
         run: |
           sleep 15
           sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "curl -sfL https://get.k3s.io | sh -"
