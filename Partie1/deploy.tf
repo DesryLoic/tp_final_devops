@@ -18,7 +18,7 @@ resource "virtualbox_vm" "debian_node" {
   name      = "vm_tp_final"
   image     = "https://vagrantcloud.com/generic/boxes/debian11/versions/4.3.12/providers/virtualbox.box"
   cpus      = 2
-  memory    = "2048 mib"
+  memory    = "2.0 gib"
 
   network_adapter {
     type           = "bridged"
