@@ -15,16 +15,22 @@ jobs:
         with:
           clean: false
 
-      - name: Configuration de l'infrastructure (Terraform)
+      - name: Déploiement VM Principale (Partie 1)
         working-directory: ./Partie1
         run: |
           terraform init
-          terraform apply -auto-approve -parallelism=1
-
+          terraform apply -auto-approve
           chmod +x get_ip.sh
           ./get_ip.sh
           echo "VM_IP=$(terraform output -raw vm_ip)" >> $GITHUB_ENV
+
+      - name: Déploiement VM Monitoring (Partie 5)
+        working-directory: ./Partie5
+        run: |
+          terraform init
+          terraform apply -auto-approve
           echo "MONITOR_IP=$(terraform output -raw monitor_ip)" >> $GITHUB_ENV
+
       - name: Connexion et Push Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
