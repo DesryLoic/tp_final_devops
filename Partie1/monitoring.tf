@@ -1,7 +1,7 @@
 resource "virtualbox_vm" "monitor_node" {
   depends_on = [virtualbox_vm.debian_node]
   count     = 1
-  name      = "vm_final_monitoring"
+  name      = "vm_monitoring_1"
   image     = "https://vagrantcloud.com/generic/boxes/debian11/versions/4.3.12/providers/virtualbox.box"
   cpus      = 1
   memory    = "1024 mib"
