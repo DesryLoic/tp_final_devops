@@ -18,15 +18,19 @@ jobs:
       - name: Déploiement VM Principale (Partie 1)
         working-directory: ./Partie1
         run: |
+          [ -f terraform.tfstate ] && mv terraform.tfstate terraform.tfstate.cache || echo "No state"
           rm -rf .terraform .terraform.lock.hcl
-          terraform init -upgrade
+          terraform init
+          [ -f terraform.tfstate.cache ] && mv terraform.tfstate.cache terraform.tfstate || echo "No cache to restore"
           terraform apply -auto-approve
 
       - name: Déploiement VM Monitoring (Partie 5)
         working-directory: ./Partie5
         run: |
+          [ -f terraform.tfstate ] && mv terraform.tfstate terraform.tfstate.cache || echo "No state"
           rm -rf .terraform .terraform.lock.hcl
-          terraform init -upgrade
+          terraform init
+          [ -f terraform.tfstate.cache ] && mv terraform.tfstate.cache terraform.tfstate || echo "No cache to restore"
           terraform apply -auto-approve
 
       - name: Récupération des IPs et création inventaire
