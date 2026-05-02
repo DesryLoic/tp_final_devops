@@ -4,7 +4,7 @@
 # ==============================================================================
 - name: Configuration des agents (Node Exporter)
   hosts: all
-  become: yes # On exécute en tant que root (sudo)
+  become: yes
   tasks:
     - name: Mettre à jour le cache APT
       apt:
@@ -28,7 +28,6 @@
   hosts: monitoring
   become: yes
   vars:
-    # On va chercher l'IP de la machine K3s dans l'inventaire pour l'injecter dans Prometheus
     ip_k3s: "{{ hostvars[groups['k3s_master'][0]]['ansible_host'] }}"
 
   tasks:
@@ -42,7 +41,7 @@
       template:
         src: ./prometheus.yml
         dest: /etc/prometheus/prometheus.yml
-      notify: Restart Prometheus # Si le fichier change, redémarrer Prometheus
+      notify: Restart Prometheus
 
     # --- GRAFANA ---
     - name: Installer les dépendances pour Grafana
@@ -83,8 +82,71 @@
         NEEDRESTART_MODE: a
         NEEDRESTART_SUSPEND: 1
 
+    # ==============================================================================
+    # ÉTAPE 3 : AUTOMATISATION DE GRAFANA (PROVISIONING)
+    # ==============================================================================
+    - name: Configurer Prometheus comme Data Source dans Grafana
+      copy:
+        dest: /etc/grafana/provisioning/datasources/prometheus.yaml
+        content: |
+          apiVersion: 1
+          datasources:
+            - name: Prometheus
+              type: prometheus
+              access: proxy
+              url: http://localhost:9090
+              isDefault: true
+        owner: root
+        group: grafana
+        mode: '0640'
+
+    - name: Configurer le fournisseur de Dashboards Grafana
+      copy:
+        dest: /etc/grafana/provisioning/dashboards/provider.yaml
+        content: |
+          apiVersion: 1
+          providers:
+            - name: 'default'
+              orgId: 1
+              folder: ''
+              type: file
+              disableDeletion: false
+              options:
+                path: /var/lib/grafana/dashboards
+        owner: root
+        group: grafana
+        mode: '0640'
+
+    - name: Créer le dossier pour les dashboards
+      file:
+        path: /var/lib/grafana/dashboards
+        state: directory
+        owner: grafana
+        group: grafana
+
+    - name: Télécharger le Dashboard 1860 (Node Exporter Full)
+      get_url:
+        url: https://grafana.com/api/dashboards/1860/revisions/latest/download
+        dest: /var/lib/grafana/dashboards/node-exporter-full.json
+        owner: grafana
+        group: grafana
+      notify: Restart Grafana
+
+    # --- DÉMARRAGE DE GRAFANA ---
     - name: S'assurer que Grafana est démarré et activé au boot
       systemd:
         name: grafana-server
         state: started
         enabled: yes
+
+  # --- GESTIONNAIRES (HANDLERS) ---
+  handlers:
+    - name: Restart Prometheus
+      systemd:
+        name: prometheus
+        state: restarted
+
+    - name: Restart Grafana
+      systemd:
+        name: grafana-server
+        state: restarted
