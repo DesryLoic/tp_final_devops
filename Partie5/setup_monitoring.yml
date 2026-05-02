@@ -65,13 +65,13 @@
         state: present
 
     - name: Installer Grafana
+      environment:
+        DEBIAN_FRONTEND: noninteractive
       apt:
         name: grafana
         state: present
         update_cache: yes
         dpkg_options: 'force-confdef,force-confold'
-      environment:
-        DEBIAN_FRONTEND: noninteractive
 
     - name: S'assurer que Grafana est démarré et activé au boot
       systemd:
