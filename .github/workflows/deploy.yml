@@ -18,12 +18,14 @@ jobs:
       - name: Déploiement VM Principale (Partie 1)
         working-directory: ./Partie1
         run: |
+          rm -rf .terraform .terraform.lock.hcl
           terraform init -upgrade
           terraform apply -auto-approve
 
       - name: Déploiement VM Monitoring (Partie 5)
         working-directory: ./Partie5
         run: |
+          rm -rf .terraform .terraform.lock.hcl
           terraform init -upgrade
           terraform apply -auto-approve
 
