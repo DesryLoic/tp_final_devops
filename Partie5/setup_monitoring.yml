@@ -53,18 +53,26 @@
           - wget
           - gnupg
         state: present
+        update_cache: yes
 
-    - name: Ajouter la clé de sécurité Grafana
-      apt_key:
-        url: https://apt.grafana.com/gpg.key
-        state: present
+    - name: Créer le dossier pour la clé GPG
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Ajouter la clé de sécurité Grafana (Méthode moderne)
+      shell: wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | tee /etc/apt/keyrings/grafana.gpg > /dev/null
+      args:
+        creates: /etc/apt/keyrings/grafana.gpg
 
     - name: Ajouter le dépôt officiel Grafana
       apt_repository:
-        repo: deb https://apt.grafana.com stable main
+        repo: deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main
         state: present
+        filename: grafana
 
-    - name: Installer Grafana
+    - name: Installer Grafana (Mode 100% non-interactif)
       apt:
         name: grafana
         state: present
@@ -80,10 +88,3 @@
         name: grafana-server
         state: started
         enabled: yes
-
-  # --- GESTIONNAIRES (HANDLERS) ---
-  handlers:
-    - name: Restart Prometheus
-      systemd:
-        name: prometheus
-        state: restarted
