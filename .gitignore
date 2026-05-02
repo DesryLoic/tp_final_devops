@@ -12,3 +12,4 @@
 # --- Divers ---
 .env
 node_modules/
+*:Zone.Identifier
