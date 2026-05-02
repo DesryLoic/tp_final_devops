@@ -64,4 +64,4 @@ jobs:
       - name: Déploiement du Monitoring (Ansible)
         run: |
           export ANSIBLE_HOST_KEY_CHECKING=False
-          ansible-playbook -i inventory.ini Partie5/setup_monitoring.yml
+          ansible-playbook -i inventory.ini Partie5/setup_monitoring.yml -vvv
