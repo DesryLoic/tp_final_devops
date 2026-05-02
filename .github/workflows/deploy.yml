@@ -54,3 +54,8 @@ jobs:
         run: |
           sshpass -p "vagrant" scp -o StrictHostKeyChecking=no mysql.yaml api.yaml vagrant@${{ env.VM_IP }}:~
           sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "sudo /usr/local/bin/k3s kubectl apply -f mysql.yaml && sudo /usr/local/bin/k3s kubectl apply -f api.yaml"
+
+      - name: Déploiement du Monitoring (Ansible)
+        run: |
+          export ANSIBLE_HOST_KEY_CHECKING=False
+          ansible-playbook -i inventory.ini Partie5/setup_monitoring.yml

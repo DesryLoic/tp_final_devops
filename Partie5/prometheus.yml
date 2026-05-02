@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets:
+        - 'localhost:9100'        # La VM Monitoring elle-même
+        - '{{ ip_k3s }}:9100'     # La VM K3s
