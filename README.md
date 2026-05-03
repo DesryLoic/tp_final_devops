@@ -1,13 +1,7 @@
 # Documentation - TP Final DevOps : API Lacets Connectés
 
-## Contexte Global
-Ce projet s'inscrit dans le cadre du développement d'une startup concevant un concept novateur de lacets connectés. Afin de supporter l'évolution rapide de la clientèle, l'objectif de cette infrastructure est de déployer automatiquement l'API de suivi avec un maximum de fiabilité, de scalabilité et d'observabilité. L'ensemble des processus a été conçu pour être le plus idempotent possible.
-
----
 
 ## Arborescence du projet
-
-La structure a été pensée pour séparer strictement les responsabilités et offrir une lisibilité maximale de l'infrastructure as Code (IaC), de la configuration et de l'orchestration :
 
     .
     ├── .github/
@@ -29,7 +23,7 @@ La structure a été pensée pour séparer strictement les responsabilités et o
     │   ├── monitoring.tf           # Provisionnement de la VM de Monitoring (Terraform)
     │   ├── prometheus.yml          # Configuration dynamique du scraping Prometheus
     │   └── setup_monitoring.yml    # Playbook Ansible (Node Exporter, Prometheus, Grafana)
-    └── README.md                   # Documentation complète du projet
+    ├── README.md                   # Documentation complète du projet
     └── .gitignore                  # Retirer du git les fichiers encombrant
 
 ---
