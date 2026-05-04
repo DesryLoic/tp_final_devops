@@ -49,26 +49,23 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/api-lacets:latest ./Partie2/api-lacets
           docker push ${{ secrets.DOCKER_USERNAME }}/api-lacets:latest
 
-      - name: Installation K3s (Air-Gap)
+      - name: Installation K3s
         run: |
-          echo "=== Téléchargement du binaire ==="
-          curl -Lo k3s https://github.com/k3s-io/k3s/releases/download/v1.30.0+k3s1/k3s
+          echo "=== Attente pour l'ouverture du port SSH ==="
+          sleep 15
 
-          echo "=== Attente (30s) pour le boot de la VM ==="
-          sleep 30
-
-          echo "=== Envoi vers la VM ==="
+          echo "=== Lancement de l'installation sur la VM ==="
           for i in {1..5}; do
-            if sshpass -p "vagrant" scp -o StrictHostKeyChecking=no -o ConnectTimeout=60 k3s vagrant@${{ env.VM_IP }}:/tmp/k3s; then
-              echo "Transfert réussi !"
+            echo "Tentative de connexion SSH $i/5..."
+            if sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 vagrant@${{ env.VM_IP }} "curl -sfL https://get.k3s.io | sh -"; then
+              echo "=== INSTALLATION RÉUSSIE ==="
               break
+            else
+              echo "Le réseau a bégayé, on retente dans 5s..."
+              sleep 5
             fi
-            echo "Échec, on retente dans 5s..."
-            sleep 5
+            if [ $i -eq 5 ]; then echo "Erreur fatale SSH."; exit 1; fi
           done
-
-          echo "=== Installation finale ==="
-          sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 vagrant@${{ env.VM_IP }} "sudo mv /tmp/k3s /usr/local/bin/k3s && sudo chmod +x /usr/local/bin/k3s && curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true sh -"
 
       - name: Déploiement sur Kubernetes
         working-directory: ./Partie3
