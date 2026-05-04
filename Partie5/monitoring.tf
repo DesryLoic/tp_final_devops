@@ -22,6 +22,7 @@ resource "virtualbox_vm" "monitor_node" {
   network_adapter {
     type           = "bridged"
     host_interface = var.network_host_if
+    nictype        = "virtio"
   }
 }
 

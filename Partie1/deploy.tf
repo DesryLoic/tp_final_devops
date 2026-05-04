@@ -23,6 +23,7 @@ resource "virtualbox_vm" "debian_node" {
   network_adapter {
     type           = "bridged"
     host_interface = var.network_host_if
+    nictype        = "virtio"
   }
 }
 
