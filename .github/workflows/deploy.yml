@@ -50,14 +50,18 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/api-lacets:latest
 
 
-      - name: Installation K3s
-        run: |
-          echo "=== Téléchargement du binaire ==="
-          curl -Lo k3s https://github.com/k3s-io/k3s/releases/download/v1.30.0+k3s1/k3s
-          echo "=== Envoi du binaire vers la VM ==="
-          sshpass -p "vagrant" scp -o StrictHostKeyChecking=no k3s vagrant@${{ env.VM_IP }}:/tmp/k3s
-          echo "=== Installation locale sans téléchargement ==="
-          sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "sudo mv /tmp/k3s /usr/local/bin/k3s && sudo chmod +x /usr/local/bin/k3s && curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true sh -"
+    - name: Installation K3s (Mode Rapide Air-Gap)
+      run: |
+        echo "=== Téléchargement du binaire sur le Runner ==="
+        curl -Lo k3s https://github.com/k3s-io/k3s/releases/download/v1.30.0+k3s1/k3s
+        echo "=== Attente du démarrage complet du SSH ==="
+        sleep 20
+        echo "=== Test de connexion rapide ==="
+        ping -c 3 ${{ env.VM_IP }}
+        echo "=== Envoi du binaire vers la VM ==="
+        sshpass -p "vagrant" scp -v -o StrictHostKeyChecking=no -o ConnectTimeout=10 k3s vagrant@${{ env.VM_IP }}:/tmp/k3s
+        echo "=== Installation locale ==="
+        sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "sudo mv /tmp/k3s /usr/local/bin/k3s && sudo chmod +x /usr/local/bin/k3s && curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true sh -"
 
       - name: Déploiement sur Kubernetes
         working-directory: ./Partie3
