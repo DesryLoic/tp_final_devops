@@ -1,4 +1,3 @@
----
 # ==============================================================================
 # ÉTAPE 1 : INSTALLATION DE NODE EXPORTER SUR TOUTES LES MACHINES (K3S + MONITOR)
 # ==============================================================================
@@ -6,14 +5,18 @@
   hosts: all
   become: yes
   tasks:
-    - name: Mettre à jour le cache APT
+    - name: Mettre à jour le cache APT (Force IPv4)
       apt:
         update_cache: yes
+      environment:
+        Acquire::ForceIPv4: "true"
 
     - name: Installer prometheus-node-exporter
       apt:
         name: prometheus-node-exporter
         state: present
+      environment:
+        Acquire::ForceIPv4: "true"
 
     - name: S'assurer que Node Exporter est démarré et activé au boot
       systemd:
@@ -36,6 +39,8 @@
       apt:
         name: prometheus
         state: present
+      environment:
+        Acquire::ForceIPv4: "true"
 
     - name: Envoyer le fichier de configuration Prometheus
       template:
@@ -44,39 +49,21 @@
       notify: Restart Prometheus
 
     # --- GRAFANA ---
-    - name: Installer les dépendances pour Grafana
+    - name: (Air-Gap) Télécharger Grafana sur le Runner (Local)
+      delegate_to: localhost
+      get_url:
+        url: https://dl.grafana.com/oss/release/grafana_10.4.2_amd64.deb
+        dest: /tmp/grafana.deb
+
+    - name: (Air-Gap) Envoyer le paquet Grafana vers la VM
+      copy:
+        src: /tmp/grafana.deb
+        dest: /tmp/grafana.deb
+
+    - name: Installer Grafana depuis le fichier local (Instantané)
       apt:
-        name:
-          - apt-transport-https
-          - software-properties-common
-          - wget
-          - gnupg
+        deb: /tmp/grafana.deb
         state: present
-        update_cache: yes
-
-    - name: Créer le dossier pour la clé GPG
-      file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
-
-    - name: Ajouter la clé de sécurité Grafana (Méthode moderne)
-      shell: wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | tee /etc/apt/keyrings/grafana.gpg > /dev/null
-      args:
-        creates: /etc/apt/keyrings/grafana.gpg
-
-    - name: Ajouter le dépôt officiel Grafana
-      apt_repository:
-        repo: deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main
-        state: present
-        filename: grafana
-
-    - name: Installer Grafana (Mode 100% non-interactif)
-      apt:
-        name: grafana
-        state: present
-        update_cache: yes
-        dpkg_options: 'force-confdef,force-confold'
       environment:
         DEBIAN_FRONTEND: noninteractive
         NEEDRESTART_MODE: a
@@ -85,7 +72,7 @@
     # ==============================================================================
     # ÉTAPE 3 : AUTOMATISATION DE GRAFANA (PROVISIONING)
     # ==============================================================================
-    - name: Configurer Prometheus comme Data Source dans Grafana
+    - name: Configurer Prometheus comme Data Source
       copy:
         dest: /etc/grafana/provisioning/datasources/prometheus.yaml
         content: |
@@ -100,7 +87,7 @@
         group: grafana
         mode: '0640'
 
-    - name: Configurer le fournisseur de Dashboards Grafana
+    - name: Configurer le fournisseur de Dashboards
       copy:
         dest: /etc/grafana/provisioning/dashboards/provider.yaml
         content: |
@@ -124,22 +111,26 @@
         owner: grafana
         group: grafana
 
-    - name: Télécharger le Dashboard 1860 (Node Exporter Full)
+    - name: (Air-Gap) Télécharger le Dashboard sur le Runner (Local)
+      delegate_to: localhost
       get_url:
         url: https://grafana.com/api/dashboards/1860/revisions/latest/download
+        dest: /tmp/node-exporter-full.json
+
+    - name: (Air-Gap) Envoyer le Dashboard vers la VM
+      copy:
+        src: /tmp/node-exporter-full.json
         dest: /var/lib/grafana/dashboards/node-exporter-full.json
         owner: grafana
         group: grafana
       notify: Restart Grafana
 
-    # --- DÉMARRAGE DE GRAFANA ---
     - name: S'assurer que Grafana est démarré et activé au boot
       systemd:
         name: grafana-server
         state: started
         enabled: yes
 
-  # --- GESTIONNAIRES (HANDLERS) ---
   handlers:
     - name: Restart Prometheus
       systemd:
