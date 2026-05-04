@@ -15,7 +15,7 @@ fi
 echo "IP K3s trouvée : $VM_IP"
 echo "IP Monitoring trouvée : $MONITOR_IP"
 
-echo "⚙️ Génération du fichier inventory.ini..."
+echo "Génération du fichier inventory.ini..."
 
 # 3. On remonte à la racine du projet (..) pour créer le fichier d'inventaire
 cd ..

@@ -3,6 +3,7 @@
 *.tfstate
 *.tfstate.backup
 
+inventory.ini
 # --- Fichiers lourds de VirtualBox / Vagrant ---
 *.box
 *.vmdk
