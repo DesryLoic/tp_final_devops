@@ -49,19 +49,29 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/api-lacets:latest ./Partie2/api-lacets
           docker push ${{ secrets.DOCKER_USERNAME }}/api-lacets:latest
 
-
-      - name: Installation K3s (Mode Rapide Air-Gap)
+      - name: Installation K3s (Mode Commando VM)
         run: |
           echo "=== Téléchargement du binaire sur le Runner ==="
           curl -Lo k3s https://github.com/k3s-io/k3s/releases/download/v1.30.0+k3s1/k3s
-          echo "=== Attente du démarrage complet du SSH ==="
-          sleep 20
-          echo "=== Test de connexion rapide ==="
-          ping -c 3 ${{ env.VM_IP }}
-          echo "=== Envoi du binaire vers la VM ==="
-          sshpass -p "vagrant" scp -v -o StrictHostKeyChecking=no -o ConnectTimeout=10 k3s vagrant@${{ env.VM_IP }}:/tmp/k3s
-          echo "=== Installation locale ==="
-          sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "sudo mv /tmp/k3s /usr/local/bin/k3s && sudo chmod +x /usr/local/bin/k3s && curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true sh -"
+          echo "=== Attente forcée (30s) pour stabiliser le SSH de la VM ==="
+          sleep 30
+
+          echo "=== Tentative d'envoi avec paramètres de survie ==="
+          export SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=60 -o BatchMode=yes -o GSSAPIAuthentication=no -o UseDNS=no -o ServerAliveInterval=10 -o ServerAliveCountMax=3"
+
+          for i in {1..5}; do
+            echo "Essai $i/5..."
+            if sshpass -p "vagrant" scp $SSH_OPTS k3s vagrant@${{ env.VM_IP }}:/tmp/k3s; then
+              echo "=== TRANSFERT RÉUSSI ==="
+              break
+            else
+              echo "Échec au niveau SSH, on retente dans 5s..."
+              sleep 5
+            fi
+            if [ $i -eq 5 ]; then echo "ERREUR : Le réseau de la VM est trop instable."; exit 1; fi
+          done
+          echo "=== Installation finale ==="
+          sshpass -p "vagrant" ssh $SSH_OPTS vagrant@${{ env.VM_IP }} "sudo mv /tmp/k3s /usr/local/bin/k3s && sudo chmod +x /usr/local/bin/k3s && curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true sh -"
 
       - name: Déploiement sur Kubernetes
         working-directory: ./Partie3
