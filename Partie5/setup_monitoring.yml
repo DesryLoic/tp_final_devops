@@ -5,18 +5,22 @@
   hosts: all
   become: yes
   tasks:
-    - name: Mettre à jour le cache APT (Force IPv4)
+    - name: Forcer définitivement IPv4 pour APT
+      copy:
+        content: 'Acquire::ForceIPv4 "true";'
+        dest: /etc/apt/apt.conf.d/99force-ipv4
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Mettre à jour le cache APT
       apt:
         update_cache: yes
-      environment:
-        Acquire::ForceIPv4: "true"
 
     - name: Installer prometheus-node-exporter
       apt:
         name: prometheus-node-exporter
         state: present
-      environment:
-        Acquire::ForceIPv4: "true"
 
     - name: S'assurer que Node Exporter est démarré et activé au boot
       systemd:
@@ -39,8 +43,6 @@
       apt:
         name: prometheus
         state: present
-      environment:
-        Acquire::ForceIPv4: "true"
 
     - name: Envoyer le fichier de configuration Prometheus
       template:
