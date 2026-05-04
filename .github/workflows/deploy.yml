@@ -60,12 +60,6 @@ jobs:
           sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true sh -"
           sleep 30
 
-      - name: Installation de Kubernetes (K3s en direct SSH)
-        run: |
-          sleep 15
-          sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "curl -sfL https://get.k3s.io | sh -"
-          sleep 30
-
       - name: Déploiement sur Kubernetes
         working-directory: ./Partie3
         run: |
