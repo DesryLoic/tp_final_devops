@@ -52,6 +52,17 @@ jobs:
       - name: Installation de Kubernetes (K3s en direct SSH)
         run: |
           sleep 15
+          echo "=== Téléchargement du binaire K3s ==="
+          sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "curl -L --progress-bar https://github.com/k3s-io/k3s/releases/latest/download/k3s -o /tmp/k3s"
+          echo "=== Préparation du fichier ==="
+          sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "sudo mv /tmp/k3s /usr/local/bin/k3s && sudo chmod +x /usr/local/bin/k3s"
+          echo "=== Lancement de l'installation locale ==="
+          sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true sh -"
+          sleep 30
+
+      - name: Installation de Kubernetes (K3s en direct SSH)
+        run: |
+          sleep 15
           sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@${{ env.VM_IP }} "curl -sfL https://get.k3s.io | sh -"
           sleep 30
 
