@@ -21,6 +21,8 @@
       apt:
         name: prometheus-node-exporter
         state: present
+      environment:
+        DEBIAN_FRONTEND: noninteractive
 
     - name: S'assurer que Node Exporter est démarré et activé au boot
       systemd:
@@ -43,6 +45,8 @@
       apt:
         name: prometheus
         state: present
+      environment:
+        DEBIAN_FRONTEND: noninteractive
 
     - name: Envoyer le fichier de configuration Prometheus
       template:
