@@ -1,5 +1,5 @@
 ---
-# Script SQL d'initialisation
+# Fichier virtuel injecté dans le conteneur au démarrage.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -18,6 +18,8 @@ data:
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ---
+# Demande à kubernetes de réserver 2Go de stockage physique sur la VM.
+# Si le pod MySQL est détruit, ce disque survit.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -30,6 +32,7 @@ spec:
       storage: 2Gi
 
 ---
+# Déploiement
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -54,6 +57,7 @@ spec:
               value: "my_db"
           ports:
             - containerPort: 3306
+          # On branche le disque dur (pvc) et le fichier init.sql dans le conteneur
           volumeMounts:
             - name: mysql-storage
               mountPath: /var/lib/mysql
@@ -69,7 +73,9 @@ spec:
             name: mysql-initdb
 
 ---
-#réseau interne pour la BDD
+# 4. Réseau interne (DNS)
+# Permet à l'API de trouver la BDD en utilisant simplement le nom "mysql-service", 
+# sans se soucier de son adresse IP exacte qui change tout le temps.
 apiVersion: v1
 kind: Service
 metadata:

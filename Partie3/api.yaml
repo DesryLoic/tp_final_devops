@@ -1,9 +1,11 @@
+---
+# 1. Deploiement de l'application Node.js
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-lacets
 spec:
-  replicas: 1
+  replicas: 1 # Nombre de pods par défaut
   selector:
     matchLabels:
       app: api-lacets
@@ -14,10 +16,11 @@ spec:
     spec:
       containers:
         - name: api
-          image: loicdesry/api-lacets:latest
+          image: loicdesry/api-lacets:latest # image récupérée depuis le Docker Hub (à modifier pour autre PC)
           ports:
             - containerPort: 3000
           env:
+            # L'API utilise le nom du Service MySQL pour s'y connecter
             - name: DB_HOST
               value: "mysql-service"
             - name: MYSQL_HOST
@@ -36,14 +39,17 @@ spec:
               value: "my_db"
             - name: PORT
               value: "3000"
+          # Définit ce que le conteneur a le droit de consommer sur la VM.
           resources:
             requests:
-              cpu: "100m"
+              cpu: "100m"   # Demande minimum garantie
               memory: "128Mi"
             limits:
-              cpu: "200m"
+              cpu: "200m"   # Plafond maximum autorisé
               memory: "256Mi"
 ---
+# 2. Service (NodePort)
+# Il ouvre un port sur la machine virtuelle pour qu'on puisse y accéder depuis notre navigateur.
 apiVersion: v1
 kind: Service
 metadata:
@@ -54,9 +60,13 @@ spec:
     app: api-lacets
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 3000
+      port: 80 # Le port d'écoute interne du service
+      targetPort: 3000 # Le vrai port du conteneur Node.js
 ---
+# 3. Régulateur
+
+# Surveille la consommation CPU de l'API. Si elle dépasse 50% de sa limite,
+# Kubernetes créera des clones de l'API (jusqu'à 3 max) pour aider.
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
