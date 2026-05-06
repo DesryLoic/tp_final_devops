@@ -10,7 +10,6 @@
     ├── Partie1/                    # Infrastructure as Code (K3s)
     │   ├── deploy.tf               # Provisionnement de la VM K3s (Terraform)
     │   ├── get_ip.sh               # Script Bash de récupération d'IP dynamique
-    │   ├── inventory.ini           # Inventaire Ansible généré automatiquement
     │   └── install_k3s.yml         # Playbook d'installation de l'orchestrateur
     ├── Partie2/                    # Conteneurisation (Docker)
     │   └── api-lacets/
@@ -24,8 +23,8 @@
     │   ├── prometheus.yml          # Configuration dynamique du scraping Prometheus
     │   └── setup_monitoring.yml    # Playbook Ansible (Node Exporter, Prometheus, Grafana)
     ├── README.md                   # Documentation complète du projet
-    └── .gitignore                  # Retirer du git les fichiers encombrant
-
+    ├── .gitignore                  # Retirer du git les fichiers encombrant
+    └── inventory.ini               # Inventaire Ansible généré automatiquement
 ---
 
 ## Partie 1 : Préparation de l'infrastructure
