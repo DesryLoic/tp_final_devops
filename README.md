@@ -55,6 +55,11 @@ Le `Dockerfile` de l'API Node.js suit les standards de production pour maximiser
 ### 2. Registre Docker Hub
 L'image est construite (build) et poussée (push) automatiquement vers Docker Hub à chaque modification détectée par la pipeline CI/CD.
 
+### 3. Adaptation "Cloud-Native" (12-Factor App)
+Pour que l'API puisse être orchestrée dynamiquement par Kubernetes (Partie 3), le code source a été refactorisé pour suivre la méthodologie "12-Factor App" :
+* **Configuration par l'environnement** : Le système de configuration statique (fichiers locaux) a été remplacé par l'utilisation de variables d'environnement (`process.env`). 
+* **Découplage** : Cela permet à Kubernetes d'injecter dynamiquement les identifiants de la base de données et le nom de l'hôte réseau (`mysql-service`) au démarrage du conteneur, sans jamais avoir à coder ces informations en dur dans l'image Docker.
+
 ---
 
 ## Partie 3 : Déploiement sur Kubernetes

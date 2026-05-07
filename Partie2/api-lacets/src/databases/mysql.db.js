@@ -1,11 +1,11 @@
 const mysql = require('mysql2/promise');
 const config = require('config');
 
-const DB_HOST = config.get('DB_HOST');
-const DB_PORT = config.get('DB_PORT');
-const DB_NAME = config.get('DB_NAME');
-const DB_USERNAME = config.get('DB_USERNAME');
-const DB_USERNAME_PASSWORD = config.get('DB_USERNAME_PASSWORD');
+const DB_HOST = process.env.DB_HOST || 'mysql-service';
+const DB_PORT = process.env.DB_PORT || '3306';
+const DB_NAME = process.env.DB_NAME || 'my_db';
+const DB_USERNAME = process.env.DB_USER || 'root';
+const DB_USERNAME_PASSWORD = process.env.DB_PASSWORD || 'rootpassword';
 
 const connectionOptions = {
     host: DB_HOST,
