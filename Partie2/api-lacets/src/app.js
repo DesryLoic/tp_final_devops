@@ -19,7 +19,8 @@ const corsOptions = {
     methods: ['GET, POST'],
     allowedHeaders: ['Content-Type'],
 };
-app.use(NODE_ENV === 'development' ? cors() : cors(corsOptions));
+
+app.use(cors());
 
 app.get('/', (req, res) => res.send());
 
