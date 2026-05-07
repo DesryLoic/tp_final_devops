@@ -97,3 +97,29 @@ L'infrastructure intègre une stack de supervision complète, déployée de faç
 
 ### 2. Configuration dynamique et Provisioning
 * **Prometheus** : Le fichier `prometheus.yml` est templatisé par Ansible pour cibler automatiquement les adresses IP dynamiques des deux serveurs.
+
+## Résultats
+
+### 1. Infrastructure et Provisionnement (Terraform)
+* **Machines Virtuelles (VirtualBox) :** Les 2 VMs créés et fonctionnelles
+![VM VirtualBox](./Image/VM%20in%20virtualbox.png)
+
+* **Attribution des IPs :** Récupération dynamique des adresses IP pour le déploiement.
+![IPs Terraform](./Image/IPs.png)
+
+### 2. CI/CD et Conteneurisation (Docker)
+* **Pipeline GitHub Actions :** Automatisation complète du build et du déploiement dans Git.
+![Git Deploiement](./Image/Git%20deploiement.png)
+
+* **Registre Docker Hub :** Image de l'API poussée sur le registre public.
+![Docker Hub](./Image/Docker.png)
+
+### 3. Application en production (K3s)
+* **Validation de l'API :** L'API est accessible via le NodePort et connectée à MySQL.
+![API Status](./Image/api.png)
+
+### 4. Observabilité (Grafana & Prometheus)
+* **Monitoring Système :** Surveillance de l'état des VMs (Pour la vm_monitoring).
+![Grafana Monitoring](./Image/grafana_monitoring.png)
+* Et pour la vm_tp_final (K3s).
+![Grafana K3s](./Image/grafana_k3s.png)
